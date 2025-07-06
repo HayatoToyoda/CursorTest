@@ -13,6 +13,7 @@
 - [July 7, 2025](#july-7-2025)
      - [Cookie Technology](#1-cookie-technology)
      - [Session Technology](#2-session-technology)
+     - [Git Merge Strategies](#3-git-merge-strategies)
 - [July 8, 2025](#july-8-2025)
 - [July 9, 2025](#july-9-2025)
 - [July 10, 2025](#july-10-2025)
@@ -681,6 +682,267 @@ const sessionStorage = {
 - **Session**: ログイン状態、権限情報、個人情報など、セキュリティが重要なデータ
 
 これらの技術により、Webアプリケーションは状態を持つことができ、より良いユーザーエクスペリエンスを提供できます。
+
+#### 3. Git Merge Strategies
+
+Gitにおけるmerge戦略は、ブランチを統合する際の異なるアプローチです。特にsquash mergeとrebase mergeは、プロジェクトの履歴を整理するために重要な手法です。
+
+##### 英単語の意味
+
+- **squash** (スカッシュ): 「押しつぶす」「圧縮する」という意味。複数のコミットを1つにまとめることを表現
+- **rebase** (リベース): 「re-」（再び）+ 「base」（基礎・土台）で「基礎を作り直す」という意味。コミットの土台を新しい場所に移し替える
+
+##### なぜsquash mergeとrebase mergeが必要なのか？
+
+通常のmergeでは以下の問題が発生することがあります：
+
+- コミット履歴が複雑になり、プロジェクトの歴史が分かりづらくなる
+- 作業中の小さなコミット（タイポ修正、デバッグなど）が履歴に残る
+- merge commitが多数作られ、履歴が読みにくくなる
+
+```bash
+# 通常のmerge（問題のある例）
+git checkout main
+git merge feature-branch
+# 結果：複雑な履歴とmerge commitが作成される
+
+# Before merge:
+# main:    A---B---C
+#               \
+# feature:       D---E---F---G
+#
+# After regular merge:
+# main:    A---B---C-------H (merge commit)
+#               \         /
+# feature:       D---E---F---G
+```
+
+##### Squash Merge
+
+Squash mergeは、ブランチのすべてのコミットを1つのコミットにまとめてからマージします。
+
+```bash
+# Squash merge の実行例
+git checkout main
+git merge --squash feature-branch
+git commit -m "Add new feature: user authentication
+
+- Implement login form
+- Add password validation  
+- Create user session management
+- Add logout functionality"
+
+# Before squash merge:
+# main:    A---B---C
+#               \
+# feature:       D---E---F---G (multiple commits)
+#
+# After squash merge:
+# main:    A---B---C---H (single commit with all changes)
+```
+
+##### Squash Merge の特徴とメリット
+
+```bash
+# feature ブランチでの開発例
+git checkout -b feature-user-auth
+git commit -m "WIP: start login form"
+git commit -m "Fix typo in form"  
+git commit -m "Add validation"
+git commit -m "Fix validation bug"
+git commit -m "Add tests"
+git commit -m "Fix test"
+git commit -m "Final cleanup"
+
+# squash merge で履歴をクリーンに
+git checkout main
+git merge --squash feature-user-auth
+git commit -m "Add user authentication system
+
+- Complete login form with validation
+- Implement secure password handling
+- Add comprehensive test coverage
+- Include user session management"
+
+# メリット：
+# ✅ 履歴がクリーンで読みやすい
+# ✅ 各機能が1つのコミットで表現される
+# ✅ code reviewが容易
+# ✅ revertが簡単
+
+# デメリット：
+# ❌ 詳細な開発過程が失われる
+# ❌ 個別のコミットの履歴が消える
+```
+
+##### Rebase Merge
+
+Rebaseは、ブランチのコミットを新しいベース（通常はmainブランチの最新）の上に「移植」します。
+
+```bash
+# Rebase merge の実行例
+git checkout feature-branch
+git rebase main
+git checkout main  
+git merge feature-branch  # fast-forward merge
+
+# Before rebase:
+# main:    A---B---C---D (main has progressed)
+#               \
+# feature:       E---F---G
+#
+# After rebase:
+# main:    A---B---C---D---E'---F'---G' (linear history)
+```
+
+##### Interactive Rebase でのコミット整理
+
+```bash
+# Interactive rebase でコミットを整理
+git checkout feature-branch
+git rebase -i main
+
+# エディタが開いて以下のような画面が表示される：
+# pick abc1234 Add login form
+# pick def5678 Fix typo  
+# pick ghi9012 Add validation
+# pick jkl3456 Fix validation bug
+# pick mno7890 Add tests
+
+# 編集例：コミットを整理
+# pick abc1234 Add login form
+# squash def5678 Fix typo  
+# pick ghi9012 Add validation  
+# squash jkl3456 Fix validation bug
+# pick mno7890 Add tests
+
+# rebaseコマンドの種類：
+# pick: コミットをそのまま使用
+# squash: 前のコミットと統合
+# edit: コミットを修正
+# drop: コミットを削除
+# reword: コミットメッセージを変更
+```
+
+##### GitHub/GitLabでの実践例
+
+```bash
+# GitHub Pull Request での squash merge
+# 1. feature branch を作成
+git checkout -b feature/add-dark-mode
+git commit -m "Add dark mode toggle"
+git commit -m "Fix CSS issues"
+git commit -m "Add dark mode tests"
+git commit -m "Update documentation"
+
+# 2. Pull Request を作成
+git push origin feature/add-dark-mode
+# GitHub でPull Request作成
+
+# 3. レビュー後、squash merge を選択
+# GitHub UI で "Squash and merge" を選択
+# 結果：1つのクリーンなコミットとしてmainに統合
+
+# GitLab Merge Request での rebase
+# 1. feature branch での開発
+git checkout -b feature/api-optimization
+
+# 2. 開発中にmainが更新された場合
+git fetch origin
+git rebase origin/main
+# コンフリクトがあれば解決
+
+# 3. Merge Request でrebase mergeを選択
+# GitLab UI で "Rebase" オプションを選択
+```
+
+##### チーム開発でのベストプラクティス
+
+```bash
+# チーム開発での merge 戦略例
+
+# 1. Feature branches: squash merge を使用
+# 理由：各機能が1つのコミットで表現され、履歴がクリーン
+git checkout main
+git merge --squash feature/user-profile
+git commit -m "Add user profile functionality"
+
+# 2. Hotfix branches: rebase merge を使用  
+# 理由：緊急修正の詳細を保持しつつ、リニアな履歴を維持
+git checkout hotfix/security-patch
+git rebase main
+git checkout main
+git merge hotfix/security-patch
+
+# 3. Release branches: regular merge を使用
+# 理由：リリースポイントを明確にマーク
+git checkout main
+git merge release/v2.1.0
+
+# .gitconfig での設定例
+[merge]
+    ff = false  # always create merge commits for tracking
+[pull]  
+    rebase = true  # always rebase when pulling
+
+# プロジェクト固有の設定例
+[branch "main"]
+    mergeoptions = --no-ff  # always create merge commit
+```
+
+##### 実際のワークフロー比較
+
+```bash
+# Scenario 1: Small feature with multiple commits
+# 開発者 A: ログイン機能を実装
+
+# Bad approach (regular merge):
+git checkout main
+git merge feature/login
+# 結果：5個の小さなコミットがmainに混入
+
+# Good approach (squash merge):
+git checkout main  
+git merge --squash feature/login
+git commit -m "Implement user login system
+
+- Add login form with validation
+- Implement authentication logic
+- Add session management  
+- Include comprehensive tests
+- Update API documentation"
+
+# Scenario 2: Long-running feature branch
+# 開発者 B: 決済システムを実装（mainが頻繁に更新される）
+
+# Bad approach: 古いベースでmerge
+git checkout main
+git merge feature/payment
+# 結果：複雑な履歴とコンフリクト
+
+# Good approach: rebase then merge  
+git checkout feature/payment
+git rebase main  # 最新のmainに基づいて履歴を再構築
+git checkout main
+git merge feature/payment  # fast-forward merge
+```
+
+#### Summary
+
+- **Squash Merge**: 複数のコミットを1つにまとめてマージ
+  - **利点**: クリーンな履歴、機能単位でのコミット、簡単なrevert
+  - **適用場面**: feature branches、小さな修正、実験的な開発
+  
+- **Rebase Merge**: コミットを新しいベースに移植してからマージ  
+  - **利点**: リニアな履歴、最新の変更との統合、詳細な履歴保持
+  - **適用場面**: 長期間のブランチ、チーム開発、継続的な統合
+
+**選択の指針:**
+- **Squash**: 機能開発、プロトタイピング、個人開発
+- **Rebase**: チーム開発、継続的な統合、履歴の重要なプロジェクト
+- **Regular Merge**: リリースブランチ、重要なマイルストーン
+
+これらの戦略を適切に使い分けることで、プロジェクトの履歴を管理しやすく保ち、チーム開発を効率化できます。
 
 ## July 8, 2025
 Content for July 8, 2025
