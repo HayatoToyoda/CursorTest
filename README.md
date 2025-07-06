@@ -1,38 +1,38 @@
 # CursorTest
 
 ## Table of Contents
-- [2025/7/06](#202576)
-    - [Conditional (Ternary) Operator ? :](#1-conditional-ternary-operator--)
-    - [Logical AND Operator &&](#2-logical-and-operator-)
-    - [Logical OR Operator ||](#3-logical-or-operator-)
-    - [Nullish Coalescing Operator ??](#4-nullish-coalescing-operator-)
-- [2025/7/07](#202577)
-- [2025/7/08](#202578)
-- [2025/7/09](#202579)
-- [2025/7/10](#2025710)
-- [2025/7/11](#2025711)
-- [2025/7/12](#2025712)
-- [2025/7/13](#2025713)
-- [2025/7/14](#2025714)
-- [2025/7/15](#2025715)
-- [2025/7/16](#2025716)
-- [2025/7/17](#2025717)
-- [2025/7/18](#2025718)
-- [2025/7/19](#2025719)
-- [2025/7/20](#2025720)
-- [2025/7/21](#2025721)
-- [2025/7/22](#2025722)
-- [2025/7/23](#2025723)
-- [2025/7/24](#2025724)
-- [2025/7/25](#2025725)
-- [2025/7/26](#2025726)
-- [2025/7/27](#2025727)
-- [2025/7/28](#2025728)
-- [2025/7/29](#2025729)
-- [2025/7/30](#2025730)
-- [2025/7/31](#2025731)
+- [July 6, 2025](#july-6-2025)
+     - [Conditional (Ternary) Operator ? :](#1-conditional-ternary-operator--)
+     - [Logical AND Operator &&](#2-logical-and-operator-)
+     - [Logical OR Operator ||](#3-logical-or-operator-)
+     - [Nullish Coalescing Operator ??](#4-nullish-coalescing-operator-)
+- [July 7, 2025](#july-7-2025)
+- [July 8, 2025](#july-8-2025)
+- [July 9, 2025](#july-9-2025)
+- [July 10, 2025](#july-10-2025)
+- [July 11, 2025](#july-11-2025)
+- [July 12, 2025](#july-12-2025)
+- [July 13, 2025](#july-13-2025)
+- [July 14, 2025](#july-14-2025)
+- [July 15, 2025](#july-15-2025)
+- [July 16, 2025](#july-16-2025)
+- [July 17, 2025](#july-17-2025)
+- [July 18, 2025](#july-18-2025)
+- [July 19, 2025](#july-19-2025)
+- [July 20, 2025](#july-20-2025)
+- [July 21, 2025](#july-21-2025)
+- [July 22, 2025](#july-22-2025)
+- [July 23, 2025](#july-23-2025)
+- [July 24, 2025](#july-24-2025)
+- [July 25, 2025](#july-25-2025)
+- [July 26, 2025](#july-26-2025)
+- [July 27, 2025](#july-27-2025)
+- [July 28, 2025](#july-28-2025)
+- [July 29, 2025](#july-29-2025)
+- [July 30, 2025](#july-30-2025)
+- [July 31, 2025](#july-31-2025)
 
-## 2025/7/06
+## July 6, 2025
 
 ### Frequently Used JavaScript Operators in React
 
@@ -153,77 +153,77 @@ By combining these operators, you can write more concise and readable code in yo
 
 
 
-## 2025/7/07
+## July 7, 2025
 Content for July 7, 2025
 
-## 2025/7/08
+## July 8, 2025
 Content for July 8, 2025
 
-## 2025/7/09
+## July 9, 2025
 Content for July 9, 2025
 
-## 2025/7/10
+## July 10, 2025
 Content for July 10, 2025
 
-## 2025/7/11
+## July 11, 2025
 Content for July 11, 2025
 
-## 2025/7/12
+## July 12, 2025
 Content for July 12, 2025
 
-## 2025/7/13
+## July 13, 2025
 Content for July 13, 2025
 
-## 2025/7/14
+## July 14, 2025
 Content for July 14, 2025
 
-## 2025/7/15
+## July 15, 2025
 Content for July 15, 2025
 
-## 2025/7/16
+## July 16, 2025
 Content for July 16, 2025
 
-## 2025/7/17
+## July 17, 2025
 Content for July 17, 2025
 
-## 2025/7/18
+## July 18, 2025
 Content for July 18, 2025
 
-## 2025/7/19
+## July 19, 2025
 Content for July 19, 2025
 
-## 2025/7/20
+## July 20, 2025
 Content for July 20, 2025
 
-## 2025/7/21
+## July 21, 2025
 Content for July 21, 2025
 
-## 2025/7/22
+## July 22, 2025
 Content for July 22, 2025
 
-## 2025/7/23
+## July 23, 2025
 Content for July 23, 2025
 
-## 2025/7/24
+## July 24, 2025
 Content for July 24, 2025
 
-## 2025/7/25
+## July 25, 2025
 Content for July 25, 2025
 
-## 2025/7/26
+## July 26, 2025
 Content for July 26, 2025
 
-## 2025/7/27
+## July 27, 2025
 Content for July 27, 2025
 
-## 2025/7/28
+## July 28, 2025
 Content for July 28, 2025
 
-## 2025/7/29
+## July 29, 2025
 Content for July 29, 2025
 
-## 2025/7/30
+## July 30, 2025
 Content for July 30, 2025
 
-## 2025/7/31
+## July 31, 2025
 Content for July 31, 2025
