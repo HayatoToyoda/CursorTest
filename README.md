@@ -11,6 +11,9 @@
      - [Map() Function](#7-map-function)
      - [Lifting State Up](#8-lifting-state-up)
 - [July 7, 2025](#july-7-2025)
+     - [Cookie Technology](#1-cookie-technology)
+     - [Session Technology](#2-session-technology)
+     - [Git Merge Strategies](#3-git-merge-strategies)
 - [July 8, 2025](#july-8-2025)
 - [July 9, 2025](#july-9-2025)
 - [July 10, 2025](#july-10-2025)
@@ -365,7 +368,581 @@ These concepts are essential for modern JavaScript and React development, provid
 
 
 ## July 7, 2025
-Content for July 7, 2025
+
+### Web State Management Technologies: Cookies and Sessions
+
+#### 1. Cookie Technology
+
+Cookieは、Webサーバーがユーザーのブラウザに保存する小さなデータファイルです。HTTPプロトコルはステートレス（状態を持たない）であるため、Cookieはユーザーの情報を記憶するために使用されます。
+
+##### なぜCookieが必要なのか？
+
+HTTPプロトコルは各リクエストが独立しているため、サーバーは以前のリクエストを覚えていません。これにより以下の問題が発生します：
+
+- ユーザーがログインしても、次のページでログイン状態を保持できない
+- ショッピングカートの中身を覚えられない
+- ユーザーの設定や好みを記録できない
+
+```javascript
+// Cookie設定の基本例
+document.cookie = "username=田中太郎; expires=Thu, 18 Dec 2025 12:00:00 UTC; path=/";
+
+// Cookie読み取りの例
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+const username = getCookie('username');
+console.log(username); // "田中太郎"
+
+// React での Cookie 使用例
+import { useState, useEffect } from 'react';
+
+function UserPreferences() {
+  const [theme, setTheme] = useState('light');
+
+  useEffect(() => {
+    // Cookie から設定を読み込み
+    const savedTheme = getCookie('theme');
+    if (savedTheme) {
+      setTheme(savedTheme);
+    }
+  }, []);
+
+  const changeTheme = (newTheme) => {
+    setTheme(newTheme);
+    // Cookie に設定を保存
+    document.cookie = `theme=${newTheme}; expires=Thu, 18 Dec 2025 12:00:00 UTC; path=/`;
+  };
+
+  return (
+    <div className={`app ${theme}`}>
+      <button onClick={() => changeTheme('dark')}>ダークテーマ</button>
+      <button onClick={() => changeTheme('light')}>ライトテーマ</button>
+    </div>
+  );
+}
+```
+
+##### Cookie の特徴
+
+```javascript
+// セキュアなCookieの設定例
+document.cookie = "sessionId=abc123; expires=Thu, 18 Dec 2025 12:00:00 UTC; path=/; secure; HttpOnly; SameSite=Strict";
+
+// Cookie の属性説明
+/*
+- expires: Cookie の有効期限
+- path: Cookie が有効なパス
+- domain: Cookie が有効なドメイン
+- secure: HTTPS 接続でのみ送信
+- HttpOnly: JavaScript からアクセス不可（セキュリティ向上）
+- SameSite: クロスサイトリクエストでの制御
+*/
+
+// ショッピングカートの例
+class ShoppingCart {
+  constructor() {
+    this.items = this.loadCartFromCookie();
+  }
+
+  addItem(item) {
+    this.items.push(item);
+    this.saveCartToCookie();
+  }
+
+  loadCartFromCookie() {
+    const cartData = getCookie('cart');
+    return cartData ? JSON.parse(cartData) : [];
+  }
+
+  saveCartToCookie() {
+    const cartJson = JSON.stringify(this.items);
+    document.cookie = `cart=${cartJson}; expires=Thu, 18 Dec 2025 12:00:00 UTC; path=/`;
+  }
+}
+```
+
+#### 2. Session Technology
+
+Sessionは、サーバーサイドでユーザーの状態を管理する技術です。通常、Session IDをCookieまたはURLパラメータで管理し、実際のデータはサーバーに保存されます。
+
+##### なぜSessionが必要なのか？
+
+Cookieだけでは以下の問題があります：
+
+- セキュリティ上重要な情報をクライアントに保存するのは危険
+- Cookieのサイズ制限（通常4KB）
+- ブラウザによる設定の違い
+
+```javascript
+// Express.js でのSession実装例
+const express = require('express');
+const session = require('express-session');
+const app = express();
+
+// Session設定
+app.use(session({
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24時間
+}));
+
+// ログイン処理
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  
+  if (validateUser(username, password)) {
+    // Session にユーザー情報を保存
+    req.session.user = {
+      id: getUserId(username),
+      username: username,
+      role: getUserRole(username)
+    };
+    res.json({ success: true, message: 'ログイン成功' });
+  } else {
+    res.status(401).json({ error: 'ログイン失敗' });
+  }
+});
+
+// 認証が必要なルート
+app.get('/dashboard', (req, res) => {
+  if (req.session.user) {
+    res.json({
+      message: `ようこそ、${req.session.user.username}さん！`,
+      userData: req.session.user
+    });
+  } else {
+    res.status(401).json({ error: '認証が必要です' });
+  }
+});
+
+// ログアウト処理
+app.post('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      res.status(500).json({ error: 'ログアウトに失敗しました' });
+    } else {
+      res.json({ message: 'ログアウトしました' });
+    }
+  });
+});
+```
+
+##### React でのSession管理例
+
+```javascript
+// React でのSession状態管理
+import { useState, useEffect, createContext, useContext } from 'react';
+
+const AuthContext = createContext();
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Session 状態をチェック
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      const response = await fetch('/api/auth/status', {
+        credentials: 'include' // Cookie を含める
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+      }
+    } catch (error) {
+      console.error('認証チェックエラー:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const login = async (username, password) => {
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ username, password })
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+        return { success: true };
+      } else {
+        return { success: false, error: 'ログインに失敗しました' };
+      }
+    } catch (error) {
+      return { success: false, error: 'ネットワークエラー' };
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await fetch('/api/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
+      setUser(null);
+    } catch (error) {
+      console.error('ログアウトエラー:', error);
+    }
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+// 認証状態を使用するコンポーネント
+function Dashboard() {
+  const { user, logout } = useContext(AuthContext);
+
+  if (!user) {
+    return <div>ログインしてください</div>;
+  }
+
+  return (
+    <div>
+      <h1>ダッシュボード</h1>
+      <p>ようこそ、{user.username}さん！</p>
+      <button onClick={logout}>ログアウト</button>
+    </div>
+  );
+}
+```
+
+##### Cookie vs Session の比較
+
+```javascript
+// Cookie による状態管理（クライアントサイド）
+const cookieStorage = {
+  // 利点：サーバーの負荷が少ない、オフラインでも動作
+  // 欠点：セキュリティリスク、サイズ制限、改ざん可能
+
+  setUserPreference: (key, value) => {
+    document.cookie = `${key}=${value}; expires=Thu, 18 Dec 2025 12:00:00 UTC; path=/`;
+  },
+
+  getUserPreference: (key) => {
+    return getCookie(key);
+  }
+};
+
+// Session による状態管理（サーバーサイド）
+const sessionStorage = {
+  // 利点：セキュリティが高い、大容量データ可能、改ざん困難
+  // 欠点：サーバー負荷、ネットワーク必須、設定が複雑
+
+  setUserData: async (userData) => {
+    const response = await fetch('/api/session/user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(userData)
+    });
+    return response.ok;
+  },
+
+  getUserData: async () => {
+    const response = await fetch('/api/session/user', {
+      credentials: 'include'
+    });
+    return response.ok ? await response.json() : null;
+  }
+};
+```
+
+#### Summary
+
+- **Cookie Technology**: クライアントサイドでの軽量なデータ保存技術
+  - HTTPのステートレス性を補完
+  - ユーザー設定、カート情報などの保存に適している
+  - セキュリティに注意が必要
+  
+- **Session Technology**: サーバーサイドでの安全な状態管理技術
+  - 重要な情報の保存に適している
+  - Cookie または URL パラメータで Session ID を管理
+  - 認証情報やセンシティブなデータの管理に最適
+
+**使い分けの指針:**
+- **Cookie**: ユーザー設定、テーマ、言語設定など、セキュリティが重要でないデータ
+- **Session**: ログイン状態、権限情報、個人情報など、セキュリティが重要なデータ
+
+これらの技術により、Webアプリケーションは状態を持つことができ、より良いユーザーエクスペリエンスを提供できます。
+
+#### 3. Git Merge Strategies
+
+Gitにおけるmerge戦略は、ブランチを統合する際の異なるアプローチです。特にsquash mergeとrebase mergeは、プロジェクトの履歴を整理するために重要な手法です。
+
+##### 英単語の意味
+
+- **squash** (スカッシュ): 「押しつぶす」「圧縮する」という意味。複数のコミットを1つにまとめることを表現
+- **rebase** (リベース): 「re-」（再び）+ 「base」（基礎・土台）で「基礎を作り直す」という意味。コミットの土台を新しい場所に移し替える
+
+##### なぜsquash mergeとrebase mergeが必要なのか？
+
+通常のmergeでは以下の問題が発生することがあります：
+
+- コミット履歴が複雑になり、プロジェクトの歴史が分かりづらくなる
+- 作業中の小さなコミット（タイポ修正、デバッグなど）が履歴に残る
+- merge commitが多数作られ、履歴が読みにくくなる
+
+```bash
+# 通常のmerge（問題のある例）
+git checkout main
+git merge feature-branch
+# 結果：複雑な履歴とmerge commitが作成される
+
+# Before merge:
+# main:    A---B---C
+#               \
+# feature:       D---E---F---G
+#
+# After regular merge:
+# main:    A---B---C-------H (merge commit)
+#               \         /
+# feature:       D---E---F---G
+```
+
+##### Squash Merge
+
+Squash mergeは、ブランチのすべてのコミットを1つのコミットにまとめてからマージします。
+
+```bash
+# Squash merge の実行例
+git checkout main
+git merge --squash feature-branch
+git commit -m "Add new feature: user authentication
+
+- Implement login form
+- Add password validation  
+- Create user session management
+- Add logout functionality"
+
+# Before squash merge:
+# main:    A---B---C
+#               \
+# feature:       D---E---F---G (multiple commits)
+#
+# After squash merge:
+# main:    A---B---C---H (single commit with all changes)
+```
+
+##### Squash Merge の特徴とメリット
+
+```bash
+# feature ブランチでの開発例
+git checkout -b feature-user-auth
+git commit -m "WIP: start login form"
+git commit -m "Fix typo in form"  
+git commit -m "Add validation"
+git commit -m "Fix validation bug"
+git commit -m "Add tests"
+git commit -m "Fix test"
+git commit -m "Final cleanup"
+
+# squash merge で履歴をクリーンに
+git checkout main
+git merge --squash feature-user-auth
+git commit -m "Add user authentication system
+
+- Complete login form with validation
+- Implement secure password handling
+- Add comprehensive test coverage
+- Include user session management"
+
+# メリット：
+# ✅ 履歴がクリーンで読みやすい
+# ✅ 各機能が1つのコミットで表現される
+# ✅ code reviewが容易
+# ✅ revertが簡単
+
+# デメリット：
+# ❌ 詳細な開発過程が失われる
+# ❌ 個別のコミットの履歴が消える
+```
+
+##### Rebase Merge
+
+Rebaseは、ブランチのコミットを新しいベース（通常はmainブランチの最新）の上に「移植」します。
+
+```bash
+# Rebase merge の実行例
+git checkout feature-branch
+git rebase main
+git checkout main  
+git merge feature-branch  # fast-forward merge
+
+# Before rebase:
+# main:    A---B---C---D (main has progressed)
+#               \
+# feature:       E---F---G
+#
+# After rebase:
+# main:    A---B---C---D---E'---F'---G' (linear history)
+```
+
+##### Interactive Rebase でのコミット整理
+
+```bash
+# Interactive rebase でコミットを整理
+git checkout feature-branch
+git rebase -i main
+
+# エディタが開いて以下のような画面が表示される：
+# pick abc1234 Add login form
+# pick def5678 Fix typo  
+# pick ghi9012 Add validation
+# pick jkl3456 Fix validation bug
+# pick mno7890 Add tests
+
+# 編集例：コミットを整理
+# pick abc1234 Add login form
+# squash def5678 Fix typo  
+# pick ghi9012 Add validation  
+# squash jkl3456 Fix validation bug
+# pick mno7890 Add tests
+
+# rebaseコマンドの種類：
+# pick: コミットをそのまま使用
+# squash: 前のコミットと統合
+# edit: コミットを修正
+# drop: コミットを削除
+# reword: コミットメッセージを変更
+```
+
+##### GitHub/GitLabでの実践例
+
+```bash
+# GitHub Pull Request での squash merge
+# 1. feature branch を作成
+git checkout -b feature/add-dark-mode
+git commit -m "Add dark mode toggle"
+git commit -m "Fix CSS issues"
+git commit -m "Add dark mode tests"
+git commit -m "Update documentation"
+
+# 2. Pull Request を作成
+git push origin feature/add-dark-mode
+# GitHub でPull Request作成
+
+# 3. レビュー後、squash merge を選択
+# GitHub UI で "Squash and merge" を選択
+# 結果：1つのクリーンなコミットとしてmainに統合
+
+# GitLab Merge Request での rebase
+# 1. feature branch での開発
+git checkout -b feature/api-optimization
+
+# 2. 開発中にmainが更新された場合
+git fetch origin
+git rebase origin/main
+# コンフリクトがあれば解決
+
+# 3. Merge Request でrebase mergeを選択
+# GitLab UI で "Rebase" オプションを選択
+```
+
+##### チーム開発でのベストプラクティス
+
+```bash
+# チーム開発での merge 戦略例
+
+# 1. Feature branches: squash merge を使用
+# 理由：各機能が1つのコミットで表現され、履歴がクリーン
+git checkout main
+git merge --squash feature/user-profile
+git commit -m "Add user profile functionality"
+
+# 2. Hotfix branches: rebase merge を使用  
+# 理由：緊急修正の詳細を保持しつつ、リニアな履歴を維持
+git checkout hotfix/security-patch
+git rebase main
+git checkout main
+git merge hotfix/security-patch
+
+# 3. Release branches: regular merge を使用
+# 理由：リリースポイントを明確にマーク
+git checkout main
+git merge release/v2.1.0
+
+# .gitconfig での設定例
+[merge]
+    ff = false  # always create merge commits for tracking
+[pull]  
+    rebase = true  # always rebase when pulling
+
+# プロジェクト固有の設定例
+[branch "main"]
+    mergeoptions = --no-ff  # always create merge commit
+```
+
+##### 実際のワークフロー比較
+
+```bash
+# Scenario 1: Small feature with multiple commits
+# 開発者 A: ログイン機能を実装
+
+# Bad approach (regular merge):
+git checkout main
+git merge feature/login
+# 結果：5個の小さなコミットがmainに混入
+
+# Good approach (squash merge):
+git checkout main  
+git merge --squash feature/login
+git commit -m "Implement user login system
+
+- Add login form with validation
+- Implement authentication logic
+- Add session management  
+- Include comprehensive tests
+- Update API documentation"
+
+# Scenario 2: Long-running feature branch
+# 開発者 B: 決済システムを実装（mainが頻繁に更新される）
+
+# Bad approach: 古いベースでmerge
+git checkout main
+git merge feature/payment
+# 結果：複雑な履歴とコンフリクト
+
+# Good approach: rebase then merge  
+git checkout feature/payment
+git rebase main  # 最新のmainに基づいて履歴を再構築
+git checkout main
+git merge feature/payment  # fast-forward merge
+```
+
+#### Summary
+
+- **Squash Merge**: 複数のコミットを1つにまとめてマージ
+  - **利点**: クリーンな履歴、機能単位でのコミット、簡単なrevert
+  - **適用場面**: feature branches、小さな修正、実験的な開発
+  
+- **Rebase Merge**: コミットを新しいベースに移植してからマージ  
+  - **利点**: リニアな履歴、最新の変更との統合、詳細な履歴保持
+  - **適用場面**: 長期間のブランチ、チーム開発、継続的な統合
+
+**選択の指針:**
+- **Squash**: 機能開発、プロトタイピング、個人開発
+- **Rebase**: チーム開発、継続的な統合、履歴の重要なプロジェクト
+- **Regular Merge**: リリースブランチ、重要なマイルストーン
+
+これらの戦略を適切に使い分けることで、プロジェクトの履歴を管理しやすく保ち、チーム開発を効率化できます。
 
 ## July 8, 2025
 Content for July 8, 2025
