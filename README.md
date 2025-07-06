@@ -11,6 +11,8 @@
      - [Map() Function](#7-map-function)
      - [Lifting State Up](#8-lifting-state-up)
 - [July 7, 2025](#july-7-2025)
+     - [Cookie Technology](#1-cookie-technology)
+     - [Session Technology](#2-session-technology)
 - [July 8, 2025](#july-8-2025)
 - [July 9, 2025](#july-9-2025)
 - [July 10, 2025](#july-10-2025)
@@ -365,7 +367,320 @@ These concepts are essential for modern JavaScript and React development, provid
 
 
 ## July 7, 2025
-Content for July 7, 2025
+
+### Web State Management Technologies: Cookies and Sessions
+
+#### 1. Cookie Technology
+
+Cookieは、Webサーバーがユーザーのブラウザに保存する小さなデータファイルです。HTTPプロトコルはステートレス（状態を持たない）であるため、Cookieはユーザーの情報を記憶するために使用されます。
+
+##### なぜCookieが必要なのか？
+
+HTTPプロトコルは各リクエストが独立しているため、サーバーは以前のリクエストを覚えていません。これにより以下の問題が発生します：
+
+- ユーザーがログインしても、次のページでログイン状態を保持できない
+- ショッピングカートの中身を覚えられない
+- ユーザーの設定や好みを記録できない
+
+```javascript
+// Cookie設定の基本例
+document.cookie = "username=田中太郎; expires=Thu, 18 Dec 2025 12:00:00 UTC; path=/";
+
+// Cookie読み取りの例
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+const username = getCookie('username');
+console.log(username); // "田中太郎"
+
+// React での Cookie 使用例
+import { useState, useEffect } from 'react';
+
+function UserPreferences() {
+  const [theme, setTheme] = useState('light');
+
+  useEffect(() => {
+    // Cookie から設定を読み込み
+    const savedTheme = getCookie('theme');
+    if (savedTheme) {
+      setTheme(savedTheme);
+    }
+  }, []);
+
+  const changeTheme = (newTheme) => {
+    setTheme(newTheme);
+    // Cookie に設定を保存
+    document.cookie = `theme=${newTheme}; expires=Thu, 18 Dec 2025 12:00:00 UTC; path=/`;
+  };
+
+  return (
+    <div className={`app ${theme}`}>
+      <button onClick={() => changeTheme('dark')}>ダークテーマ</button>
+      <button onClick={() => changeTheme('light')}>ライトテーマ</button>
+    </div>
+  );
+}
+```
+
+##### Cookie の特徴
+
+```javascript
+// セキュアなCookieの設定例
+document.cookie = "sessionId=abc123; expires=Thu, 18 Dec 2025 12:00:00 UTC; path=/; secure; HttpOnly; SameSite=Strict";
+
+// Cookie の属性説明
+/*
+- expires: Cookie の有効期限
+- path: Cookie が有効なパス
+- domain: Cookie が有効なドメイン
+- secure: HTTPS 接続でのみ送信
+- HttpOnly: JavaScript からアクセス不可（セキュリティ向上）
+- SameSite: クロスサイトリクエストでの制御
+*/
+
+// ショッピングカートの例
+class ShoppingCart {
+  constructor() {
+    this.items = this.loadCartFromCookie();
+  }
+
+  addItem(item) {
+    this.items.push(item);
+    this.saveCartToCookie();
+  }
+
+  loadCartFromCookie() {
+    const cartData = getCookie('cart');
+    return cartData ? JSON.parse(cartData) : [];
+  }
+
+  saveCartToCookie() {
+    const cartJson = JSON.stringify(this.items);
+    document.cookie = `cart=${cartJson}; expires=Thu, 18 Dec 2025 12:00:00 UTC; path=/`;
+  }
+}
+```
+
+#### 2. Session Technology
+
+Sessionは、サーバーサイドでユーザーの状態を管理する技術です。通常、Session IDをCookieまたはURLパラメータで管理し、実際のデータはサーバーに保存されます。
+
+##### なぜSessionが必要なのか？
+
+Cookieだけでは以下の問題があります：
+
+- セキュリティ上重要な情報をクライアントに保存するのは危険
+- Cookieのサイズ制限（通常4KB）
+- ブラウザによる設定の違い
+
+```javascript
+// Express.js でのSession実装例
+const express = require('express');
+const session = require('express-session');
+const app = express();
+
+// Session設定
+app.use(session({
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24時間
+}));
+
+// ログイン処理
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  
+  if (validateUser(username, password)) {
+    // Session にユーザー情報を保存
+    req.session.user = {
+      id: getUserId(username),
+      username: username,
+      role: getUserRole(username)
+    };
+    res.json({ success: true, message: 'ログイン成功' });
+  } else {
+    res.status(401).json({ error: 'ログイン失敗' });
+  }
+});
+
+// 認証が必要なルート
+app.get('/dashboard', (req, res) => {
+  if (req.session.user) {
+    res.json({
+      message: `ようこそ、${req.session.user.username}さん！`,
+      userData: req.session.user
+    });
+  } else {
+    res.status(401).json({ error: '認証が必要です' });
+  }
+});
+
+// ログアウト処理
+app.post('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      res.status(500).json({ error: 'ログアウトに失敗しました' });
+    } else {
+      res.json({ message: 'ログアウトしました' });
+    }
+  });
+});
+```
+
+##### React でのSession管理例
+
+```javascript
+// React でのSession状態管理
+import { useState, useEffect, createContext, useContext } from 'react';
+
+const AuthContext = createContext();
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Session 状態をチェック
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      const response = await fetch('/api/auth/status', {
+        credentials: 'include' // Cookie を含める
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+      }
+    } catch (error) {
+      console.error('認証チェックエラー:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const login = async (username, password) => {
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ username, password })
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+        return { success: true };
+      } else {
+        return { success: false, error: 'ログインに失敗しました' };
+      }
+    } catch (error) {
+      return { success: false, error: 'ネットワークエラー' };
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await fetch('/api/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
+      setUser(null);
+    } catch (error) {
+      console.error('ログアウトエラー:', error);
+    }
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+// 認証状態を使用するコンポーネント
+function Dashboard() {
+  const { user, logout } = useContext(AuthContext);
+
+  if (!user) {
+    return <div>ログインしてください</div>;
+  }
+
+  return (
+    <div>
+      <h1>ダッシュボード</h1>
+      <p>ようこそ、{user.username}さん！</p>
+      <button onClick={logout}>ログアウト</button>
+    </div>
+  );
+}
+```
+
+##### Cookie vs Session の比較
+
+```javascript
+// Cookie による状態管理（クライアントサイド）
+const cookieStorage = {
+  // 利点：サーバーの負荷が少ない、オフラインでも動作
+  // 欠点：セキュリティリスク、サイズ制限、改ざん可能
+
+  setUserPreference: (key, value) => {
+    document.cookie = `${key}=${value}; expires=Thu, 18 Dec 2025 12:00:00 UTC; path=/`;
+  },
+
+  getUserPreference: (key) => {
+    return getCookie(key);
+  }
+};
+
+// Session による状態管理（サーバーサイド）
+const sessionStorage = {
+  // 利点：セキュリティが高い、大容量データ可能、改ざん困難
+  // 欠点：サーバー負荷、ネットワーク必須、設定が複雑
+
+  setUserData: async (userData) => {
+    const response = await fetch('/api/session/user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(userData)
+    });
+    return response.ok;
+  },
+
+  getUserData: async () => {
+    const response = await fetch('/api/session/user', {
+      credentials: 'include'
+    });
+    return response.ok ? await response.json() : null;
+  }
+};
+```
+
+#### Summary
+
+- **Cookie Technology**: クライアントサイドでの軽量なデータ保存技術
+  - HTTPのステートレス性を補完
+  - ユーザー設定、カート情報などの保存に適している
+  - セキュリティに注意が必要
+  
+- **Session Technology**: サーバーサイドでの安全な状態管理技術
+  - 重要な情報の保存に適している
+  - Cookie または URL パラメータで Session ID を管理
+  - 認証情報やセンシティブなデータの管理に最適
+
+**使い分けの指針:**
+- **Cookie**: ユーザー設定、テーマ、言語設定など、セキュリティが重要でないデータ
+- **Session**: ログイン状態、権限情報、個人情報など、セキュリティが重要なデータ
+
+これらの技術により、Webアプリケーションは状態を持つことができ、より良いユーザーエクスペリエンスを提供できます。
 
 ## July 8, 2025
 Content for July 8, 2025
