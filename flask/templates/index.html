@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask アプリケーション</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Welcome to Flask!</h1>
+            <nav>
+                <ul>
+                    <li><a href="/">ホーム</a></li>
+                    <li><a href="/about">アバウト</a></li>
+                </ul>
+            </nav>
+        </header>
+        
+        <main>
+            <section class="hero">
+                <h2>Flaskアプリケーションへようこそ</h2>
+                <p>これは基本的なFlaskアプリケーションのテンプレートです。</p>
+            </section>
+            
+            <section class="api-demo">
+                <h3>API デモ</h3>
+                <div class="api-input">
+                    <input type="text" id="nameInput" placeholder="名前を入力してください" value="World">
+                    <button onclick="callAPI()">APIを呼び出す</button>
+                </div>
+                <div id="apiResult" class="api-result"></div>
+            </section>
+            
+            <section class="features">
+                <h3>機能</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>ルーティング</h4>
+                        <p>複数のURLパスに対応</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>テンプレート</h4>
+                        <p>Jinja2テンプレートエンジン</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>API</h4>
+                        <p>JSON APIエンドポイント</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>静的ファイル</h4>
+                        <p>CSS、JSファイルの配信</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>&copy; 2024 Flask Application. Made with ❤️ using Flask framework.</p>
+        </footer>
+    </div>
+
+    <script>
+        async function callAPI() {
+            const name = document.getElementById('nameInput').value;
+            const resultDiv = document.getElementById('apiResult');
+            
+            try {
+                const response = await fetch(`/api/hello?name=${encodeURIComponent(name)}`);
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <strong>APIレスポンス:</strong> ${data.message}
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        エラーが発生しました: ${error.message}
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
