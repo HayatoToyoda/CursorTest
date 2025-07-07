@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Flask アプリケーション</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>About Flask Application</h1>
+            <nav>
+                <ul>
+                    <li><a href="/">ホーム</a></li>
+                    <li><a href="/about" class="active">アバウト</a></li>
+                </ul>
+            </nav>
+        </header>
+        
+        <main>
+            <section class="about-content">
+                <h2>このアプリケーションについて</h2>
+                <p>これはFlaskフレームワークを使用して作成された基本的なWebアプリケーションです。</p>
+                
+                <h3>技術スタック</h3>
+                <ul class="tech-list">
+                    <li><strong>Flask:</strong> Pythonの軽量Webフレームワーク</li>
+                    <li><strong>Jinja2:</strong> テンプレートエンジン</li>
+                    <li><strong>HTML5/CSS3:</strong> フロントエンド</li>
+                    <li><strong>JavaScript:</strong> インタラクティブ機能</li>
+                </ul>
+                
+                <h3>ファイル構造</h3>
+                <pre class="file-structure">
+flask/
+├── app.py              # メインアプリケーション
+├── requirements.txt    # 依存関係
+├── templates/          # HTMLテンプレート
+│   ├── index.html
+│   └── about.html
+├── static/            # 静的ファイル
+│   └── css/
+│       └── style.css
+└── README.md         # プロジェクト説明
+                </pre>
+                
+                <h3>使用方法</h3>
+                <ol>
+                    <li>依存関係をインストール: <code>pip install -r requirements.txt</code></li>
+                    <li>アプリケーションを実行: <code>python app.py</code></li>
+                    <li>ブラウザで <code>http://localhost:5000</code> にアクセス</li>
+                </ol>
+            </section>
+        </main>
+        
+        <footer>
+            <p>&copy; 2024 Flask Application. Made with ❤️ using Flask framework.</p>
+        </footer>
+    </div>
+</body>
+</html>
