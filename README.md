@@ -17,7 +17,7 @@
 - [July 8, 2025](#july-8-2025)
 - [July 9, 2025](#july-9-2025)
 - [July 10, 2025](#july-10-2025)
-     - [form.csrf_token(Flask)](#form-csrf-token-flask-)      
+     - [form.csrf_token(Flask)](#1-form-csrf-token-flask-)      
 - [July 11, 2025](#july-11-2025)
 - [July 12, 2025](#july-12-2025)
 - [July 13, 2025](#july-13-2025)
@@ -953,7 +953,7 @@ Content for July 9, 2025
 
 ## July 10, 2025
 
-#### form.csrf_token(Flask) :
+#### 1. form.csrf_token(Flask)
 
 一言で言うと、**「CSRF（クロスサイト・リクエスト・フォージェリ）」という種類のサイバー攻撃を防ぐための「合言葉」をフォームに埋め込むためのコード**です。
 
