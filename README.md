@@ -17,7 +17,7 @@
 - [July 8, 2025](#july-8-2025)
 - [July 9, 2025](#july-9-2025)
 - [July 10, 2025](#july-10-2025)
-     - [form.csrf_token(Flask)](#1-form-csrf-token-flask-)      
+     - [form.csrf_token(Flask)](#1-formcsrftokenflask)      
 - [July 11, 2025](#july-11-2025)
 - [July 12, 2025](#july-12-2025)
 - [July 13, 2025](#july-13-2025)
