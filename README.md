@@ -953,7 +953,7 @@ Content for July 9, 2025
 
 ## July 10, 2025
 
-#### 1. form.csrf_token(Flask)
+#### 1. [form.csrf_token(Flask)]
 
 一言で言うと、**「CSRF（クロスサイト・リクエスト・フォージェリ）」という種類のサイバー攻撃を防ぐための「合言葉」をフォームに埋め込むためのコード**です。
 
