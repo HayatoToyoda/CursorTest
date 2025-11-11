@@ -72,16 +72,15 @@ def _read_messages_from_results(results: List[List[Dict[str, str]]]) -> Iterable
             yield message
 
 
-def _parse_report_log(message: str) -> Optional[Dict[str, str]]:
+def _parse_report_log(message: str) -> Optional[Dict[str, int]]:
     match = REPORT_LOG_PATTERN.search(message)
     if not match:
         return None
     data = match.groupdict()
-    max_memory = data.get("max_memory_used_mb")
     return {
         "request_id": data["request_id"],
-        "billed_duration_ms": data["billed_duration_ms"],
-        "memory_mb": max_memory or data["memory_size_mb"],
+        "billed_duration_ms": int(data["billed_duration_ms"]),
+        "memory_mb": int(data["memory_size_mb"]),
     }
 
 
@@ -97,7 +96,7 @@ def _parse_custom_log(message: str) -> Optional[Dict[str, str]]:
 
 
 def _aggregate_usage(messages: Iterable[str]) -> List[Dict[str, str]]:
-    report_by_request: Dict[str, Dict[str, str]] = {}
+    report_by_request: Dict[str, Dict[str, int]] = {}
     client_by_request: Dict[str, Dict[str, str]] = {}
 
     for message in messages:
@@ -110,19 +109,26 @@ def _aggregate_usage(messages: Iterable[str]) -> List[Dict[str, str]]:
         if custom:
             client_by_request.setdefault(custom["request_id"], custom)
 
-    combined_rows: List[Dict[str, str]] = []
+    aggregated: Dict[Tuple[str, int], int] = {}
     for request_id, report in report_by_request.items():
         client = client_by_request.get(request_id)
         if not client:
             continue
+
+        key = (client["client_identifier"], report["memory_mb"])
+        aggregated[key] = aggregated.get(key, 0) + report["billed_duration_ms"]
+
+    combined_rows: List[Dict[str, str]] = []
+    for (client_identifier, memory_mb), billed_duration_total in aggregated.items():
         combined_rows.append(
             {
-                "client_identifier": client["client_identifier"],
-                "memory_mb": report["memory_mb"],
-                "billed_duration_ms": report["billed_duration_ms"],
+                "client_identifier": client_identifier,
+                "memory_mb": str(memory_mb),
+                "billed_duration_ms": str(billed_duration_total),
             }
         )
 
+    combined_rows.sort(key=lambda row: (row["client_identifier"], row["memory_mb"]))
     return combined_rows
 
 
